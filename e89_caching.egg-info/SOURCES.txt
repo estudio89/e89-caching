@@ -1,0 +1,9 @@
+MANIFEST.in
+README.md
+setup.py
+e89_caching/__init__.py
+e89_caching/caching.py
+e89_caching.egg-info/PKG-INFO
+e89_caching.egg-info/SOURCES.txt
+e89_caching.egg-info/dependency_links.txt
+e89_caching.egg-info/top_level.txt

@@ -1,0 +1,42 @@
+Metadata-Version: 1.1
+Name: e89-caching
+Version: 1.0.0
+Summary: Application for handling caching of data - by Estúdio 89.
+Home-page: http://www.estudio89.com.br/
+Author: Luccas Correa
+Author-email: luccascorrea@estudio89.com.br
+License: BSD License
+Description: # E89 - CACHING
+        
+        
+        The app e89-caching allows for the results of an expensive operation be saved in cache.
+        
+        ## How to use it
+        
+        In order to use the app, follow the steps:
+        
+        1) For every operation that you want to be cached, create a subclass of **e89_caching.caching.BaseCacheManager** and implement the following methods:
+        
+          - **get_models(self)**: This method must return a list of strings with the names of models that when saved or deleted should trigger a check in the validity of the cached data. Model names should be written as "app.model".
+        
+          - **get_version(self, *args, **kwargs)**: This method must return an integer that represents the version of the data in cache. A good approach for this is to return the date when the objects involved in the calculation were last updated. In this situation, if none of the objects were updated (or new objects were created) then the cache should not be recalculated. The parameters received will be the same passed to the run method (see below).
+        
+          - **run(self, *args, **kwargs)**: This method must run the operation and return the results that should be stored in cache. The parameters received will be passed by the user when requesting the data from the cache.
+        
+        2) In your settings.py file, include 'e89_caching' under **INSTALLED_APPS**.
+        
+        3) In your code, whenever you need the cached data, you must request it like this:
+        
+          `data = MyCacheManager.get(param1, param2)`
+        
+        
+Platform: UNKNOWN
+Classifier: Environment :: Web Environment
+Classifier: Framework :: Django
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
