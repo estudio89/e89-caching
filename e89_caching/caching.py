@@ -9,7 +9,6 @@ class BaseCacheManager(object):
 	def __init__(self, *args, **kwargs):
 		self._args = args
 		self._kwargs = kwargs
-		self._is_running = False
 		self._running_thread = None
 
 		self._init_events()
@@ -26,11 +25,10 @@ class BaseCacheManager(object):
 
 	def _run_wrapper(self):
 		''' Wraps the run method in order to save the results in cache before returning them. '''
-		self._is_running = True
 		result = self.run(*self._args, **self._kwargs)
 		version = self.get_version(*self._args, **self._kwargs)
 		cache.set(key = id(self), value = result, timeout = None, version = version)
-		self._is_running = False
+		self._running_thread = None
 
 		return result
 
@@ -40,7 +38,7 @@ class BaseCacheManager(object):
 			returned.'''
 
 
-		if self._is_running:
+		if self._running_thread:
 			self._running_thread.join()
 			return cache.get(key = id(self), version = self.get_version(*self._args, **self._kwargs))
 
