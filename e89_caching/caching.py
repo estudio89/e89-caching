@@ -27,7 +27,7 @@ class BaseCacheManager(object):
 		''' Wraps the run method in order to save the results in cache before returning them. '''
 		result = self.run(*self._args, **self._kwargs)
 		version = self.get_version(*self._args, **self._kwargs)
-		cache.set(key = id(self), value = result, timeout = None, version = version)
+		cache.set(key = self.__hash__(), value = result, timeout = None, version = version)
 		self._running_thread = None
 
 		return result
@@ -40,9 +40,9 @@ class BaseCacheManager(object):
 
 		if self._running_thread:
 			self._running_thread.join()
-			return cache.get(key = id(self), version = self.get_version(*self._args, **self._kwargs))
+			return cache.get(key = self.__hash__(), version = self.get_version(*self._args, **self._kwargs))
 
-		result = cache.get(key = id(self), version = self.get_version(*self._args, **self._kwargs))
+		result = cache.get(key = self.__hash__(), version = self.get_version(*self._args, **self._kwargs))
 		if result:
 			return result
 		else:
