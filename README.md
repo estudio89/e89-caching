@@ -15,7 +15,7 @@ In order to use the app, follow the steps:
 
   - **get_models(self)**: This method must return a list of strings with the names of models that when saved or deleted should trigger a check in the validity of the cached data. Model names should be written as "app.model".
 
-  - **get_version(self, \*args, **kwargs)**: This method must return an integer that represents the version of the data in cache. A good approach for this method is to return and integer representing the most recent date when one of the objects involved in the calculation was last updated. In this situation, if none of the objects were updated (and no objects were created) then the cache will not be recalculated. The parameters received will be the same passed to the run method (see below).
+  - **get_version(self, \*args, **kwargs)**: This method must return an integer that represents the version of the data in cache. A good approach for this method is to return an integer representing the most recent date when one of the objects involved in the calculation was last updated. In this situation, if none of the objects were updated (and no objects were created) then the cache will not be recalculated. The parameters received will be the same passed to the run method (see below).
 
   - **run(self, \*args, **kwargs)**: This method must run the operation and return the results that should be stored in cache. The parameters received will be passed by the user when requesting the data from the cache (see step 3).
 
