@@ -7,12 +7,16 @@ import sys
 
 class BaseCacheManager(object):
 	def __init__(self, *args, **kwargs):
+		self._manager_id = kwargs.pop('_manager_id')
 		self._args = args
 		self._kwargs = kwargs
 		self._running_thread = None
 
 		self._init_events()
 
+
+	def _get_key(self):
+		return 'e89_caching:%d'%self._manager_id
 
 	def _init_events(self):
 		''' Subscribes to the post_delete and post_save events, in order to rerun the query if needed. '''
@@ -27,7 +31,7 @@ class BaseCacheManager(object):
 		''' Wraps the run method in order to save the results in cache before returning them. '''
 		result = self.run(*self._args, **self._kwargs)
 		version = self.get_version(*self._args, **self._kwargs)
-		cache.set(key = self.__hash__(), value = result, timeout = None, version = version)
+		cache.set(key = self._get_key(), value = result, timeout = None, version = version)
 		self._running_thread = None
 
 		return result
@@ -40,9 +44,9 @@ class BaseCacheManager(object):
 
 		if self._running_thread:
 			self._running_thread.join()
-			return cache.get(key = self.__hash__(), version = self.get_version(*self._args, **self._kwargs))
+			return cache.get(key = self._get_key(), version = self.get_version(*self._args, **self._kwargs))
 
-		result = cache.get(key = self.__hash__(), version = self.get_version(*self._args, **self._kwargs))
+		result = cache.get(key = self._get_key(), version = self.get_version(*self._args, **self._kwargs))
 		if result:
 			return result
 		else:
@@ -85,9 +89,10 @@ class CacheCentral(object):
 			the results are calculated and saved in cache.'''
 
 		for manager in CacheCentral.cache_managers:
-			if isinstance(manager, cls) and manager._args == args and manager._kwargs == kwargs:
+			if type(manager) == cls and manager._args == args and manager._kwargs == kwargs:
 				return manager._get_or_run(separate_thread=False)
 
+		kwargs['_manager_id'] = len(CacheCentral.cache_managers)
 		manager = cls(*args, **kwargs)
 		CacheCentral.cache_managers.append(manager)
 		return manager._run_wrapper()
