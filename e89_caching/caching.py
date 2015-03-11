@@ -93,7 +93,7 @@ class CacheCentral(object):
 			the results are calculated and saved in cache.'''
 		_id = _generate_hash(cls, args, kwargs)
 		for manager in CacheCentral.cache_managers:
-			if manager._id = _id:
+			if manager._id == _id:
 				return manager._get_or_run(separate_thread=False)
 
 		manager = cls(*args, **kwargs)
