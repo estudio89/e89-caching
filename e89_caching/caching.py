@@ -4,16 +4,20 @@ import threading
 from django.db.models.signals import post_save, post_delete
 import sys
 
+def _generate_hash(manager, args = None, kwargs = None):
+	if isinstance(manager, BaseCacheManager):
+	    return hash(manager.__class__.__name__ + manager._args.__repr__() + manager._kwargs.__repr__())
+	else:
+		return hash(manager.__name__ + args.__repr__() + kwargs.__repr__())
+
 
 class BaseCacheManager(object):
 	def __init__(self, *args, **kwargs):
 		self._args = args
 		self._kwargs = kwargs
 		self._running_thread = None
-
+		self._id = self.__hash__()
 		self._init_events()
-
-
 
 	def _init_events(self):
 		''' Subscribes to the post_delete and post_save events, in order to rerun the query if needed. '''
@@ -28,7 +32,7 @@ class BaseCacheManager(object):
 		''' Wraps the run method in order to save the results in cache before returning them. '''
 		result = self.run(*self._args, **self._kwargs)
 		version = self.get_version(*self._args, **self._kwargs)
-		cache.set(key = self.__hash__(), value = result, timeout = None, version = version)
+		cache.set(key = self._id, value = result, timeout = None, version = version)
 		self._running_thread = None
 
 		return result
@@ -41,9 +45,9 @@ class BaseCacheManager(object):
 
 		if self._running_thread:
 			self._running_thread.join()
-			return cache.get(key = self.__hash__(), version = self.get_version(*self._args, **self._kwargs))
+			return cache.get(key = self._id, version = self.get_version(*self._args, **self._kwargs))
 
-		result = cache.get(key = self.__hash__(), version = self.get_version(*self._args, **self._kwargs))
+		result = cache.get(key = self._id, version = self.get_version(*self._args, **self._kwargs))
 		if result:
 			return result
 		else:
@@ -53,6 +57,9 @@ class BaseCacheManager(object):
 			else:
 				return self._run_wrapper()
 
+
+	def __hash__(self):
+		return _generate_hash(self)
 
 	def get_models(self):
 		''' This method must return a list of strings with the names of models that when saved or deleted should
@@ -84,9 +91,9 @@ class CacheCentral(object):
 		''' Loops through all the existing cache managers, looking for one with the same query parameters.
 			If there is one that matches, its results are returned, if not, then a new one is created and
 			the results are calculated and saved in cache.'''
-
+		_id = _generate_hash(cls, args, kwargs)
 		for manager in CacheCentral.cache_managers:
-			if type(manager) == cls and manager._args == args and manager._kwargs == kwargs:
+			if manager._id = _id:
 				return manager._get_or_run(separate_thread=False)
 
 		manager = cls(*args, **kwargs)
