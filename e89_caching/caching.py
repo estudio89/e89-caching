@@ -98,4 +98,4 @@ class CacheCentral(object):
 
 		manager = cls(*args, **kwargs)
 		CacheCentral.cache_managers.append(manager)
-		return manager._get_or_run()
+		return manager._get_or_run(separate_thread=False)
