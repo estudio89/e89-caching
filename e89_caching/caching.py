@@ -44,8 +44,11 @@ class BaseCacheManager(object):
 
 
 		if self._running_thread:
-			self._running_thread.join()
-			return cache.get(key = self._id, version = self.get_version(*self._args, **self._kwargs))
+			if not kwargs.pop('sender'):
+				self._running_thread.join()
+				return cache.get(key = self._id, version = self.get_version(*self._args, **self._kwargs))
+			else:
+				return
 
 		result = cache.get(key = self._id, version = self.get_version(*self._args, **self._kwargs))
 		if result:
